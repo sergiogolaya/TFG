@@ -1,5 +1,3 @@
-# TFG
-
 # EMG Signal Processing and Analysis
 
 ## Overview
