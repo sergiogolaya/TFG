@@ -69,7 +69,7 @@ for f = 1:length(file_list)
             normalized_time = linspace(0, 100, num_points);
 
             % Perform interpolation
-            normalized_envelope = interp1(original_time, envelope_data, normalized_time, 'spline');
+            normalized_envelope = interp1(original_time, envelope_data, normalized_time, 'linear');
 
             % Store the normalized data
             data.emg_data_struct.cut_data_normalized.(rep_name).(muscle_name).envelope = normalized_envelope;
@@ -89,33 +89,25 @@ for f = 1:length(file_list)
     fprintf('Saved: %s\n', new_file_name);
 
     % Plot original vs. normalized envelope (first repetition & muscle)
-    % Define the sampling frequency
-    fs = 2148; % Hz
-    
-    if show_plots && ~isempty(original_plot_data) && ~isempty(normalized_plot_data)
+     if show_plots && ~isempty(original_plot_data) && ~isempty(normalized_plot_data)
         figure;
     
-        % Compute the original time axis
-        num_samples = length(original_plot_data);
-        original_time = (0:num_samples-1) / fs;  % Time in seconds
-    
-        % Plot the original envelope with real time axis
+        % Plot the original envelope (no x-axis adjustment)
         subplot(2,1,1);
-        plot(original_time, original_plot_data, 'b');
+        plot(original_plot_data, 'b');
         title(sprintf('Original Envelope - %s (%s)', first_muscle, file_name), 'Interpreter', 'none');
-        xlabel('Time (s)'); % Use real time axis
+        xlabel('Number of Samples'); % Label x-axis as number of samples
         ylabel('Envelope Amplitude');
         grid on;
     
-        % Plot the normalized envelope with normalized time axis (0-100%)
+        % Plot the normalized envelope (0-100% x-axis)
         subplot(2,1,2);
         plot(linspace(0, 100, num_points), normalized_plot_data, 'r');
         title(sprintf('Normalized Envelope - %s (%s)', first_muscle, file_name), 'Interpreter', 'none');
-        xlabel('Repetition Completion (%)'); % Use normalized x-axis
+        xlabel('Repetition Completion (%)'); 
         ylabel('Envelope Amplitude');
         grid on;
     end
-
 
 end
 
