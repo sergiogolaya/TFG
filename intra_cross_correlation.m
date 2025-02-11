@@ -13,6 +13,9 @@ end
 full_file_path = fullfile(input_path, input_file);
 load(full_file_path);
 
+% Extract patient identifier from filename (assuming a pattern like "patient_X.mat")
+[~, patient_id, ~] = fileparts(input_file);
+
 % Toggle for plotting
 show_plots = true;  % Set to 'false' to disable plots
 
@@ -99,7 +102,10 @@ for m = 1:length(muscles)
     end
 end
 
-% Save results in the specified directory
-save(fullfile(save_dir, 'crossCorrResults.mat'), 'crossCorrResults');
+% Construct the filename with the patient identifier
+save_filename = fullfile(save_dir, ['crossCorrResults_' patient_id '.mat']);
 
-fprintf('Cross-correlation results saved to: %s\n', fullfile(save_dir, 'crossCorrResults.mat'));
+% Save results in the specified directory
+save(save_filename, 'crossCorrResults');
+
+fprintf('Cross-correlation results saved to: %s\n', save_filename);
