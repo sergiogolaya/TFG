@@ -16,9 +16,6 @@ load(full_file_path);
 % Extract patient identifier from filename (assuming a pattern like "patient_X.mat")
 [~, patient_id, ~] = fileparts(input_file);
 
-% Extract the main struct (assuming it is stored in 'data')
-emg_data_struct = data.emg_data_struct;
-
 % Get available muscles from one repetition
 muscles = fieldnames(emg_data_struct.cut_data_normalized.rep_1);
 

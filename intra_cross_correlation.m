@@ -20,9 +20,6 @@ load(full_file_path);
 show_plots = true;  % Set to 'false' to disable plots
 disp_results = false; % Set to 'false' to disable matrix display
 
-% Extract the main struct (assuming it is stored in 'data')
-emg_data_struct = data.emg_data_struct;
-
 % Get muscle names from one repetition (assumes all reps have same muscles)
 muscles = fieldnames(emg_data_struct.cut_data_normalized.rep_1);
 

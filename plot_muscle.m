@@ -13,9 +13,6 @@ end
 full_file_path = fullfile(input_path, input_file);
 load(full_file_path);
 
-% Extract the main struct (assuming it is stored in 'data')
-emg_data_struct = data.emg_data_struct;
-
 % Get available muscles
 muscles = fieldnames(emg_data_struct.cut_data_normalized.rep_1);
 
