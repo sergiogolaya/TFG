@@ -18,6 +18,7 @@ load(full_file_path);
 
 % Toggle for plotting
 show_plots = true;  % Set to 'false' to disable plots
+disp_results = false; % Set to 'false' to disable matrix display
 
 % Extract the main struct (assuming it is stored in 'data')
 emg_data_struct = data.emg_data_struct;
@@ -84,12 +85,14 @@ for m = 1:length(muscles)
     crossCorrResults.(muscle_name).manual = corr_matrix_manual;
     crossCorrResults.(muscle_name).xcorr = corr_matrix_xcorr;
     
-    % Display results
-    fprintf('Cross-correlation matrices for %s:\n', muscle_name);
-    disp('Manual Method:');
-    disp(corr_matrix_manual);
-    disp('xcorr Method:');
-    disp(corr_matrix_xcorr);
+    if disp_results
+        % Display results
+        fprintf('Cross-correlation matrices for %s:\n', muscle_name);
+        disp('Manual Method:');
+        disp(corr_matrix_manual);
+        disp('xcorr Method:');
+        disp(corr_matrix_xcorr);
+    end
     
     % Plot heatmaps if show_plots is enabled
     if show_plots
