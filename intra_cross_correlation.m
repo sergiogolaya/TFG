@@ -53,52 +53,57 @@ for m = 1:length(muscles)
         all_reps_data(r, :) = emg_data_struct.cut_data_normalized.(rep_name).(muscle_name).envelope;
     end
     
-    % Compute cross-correlation between repetitions
-    corr_matrix = zeros(num_reps, num_reps);
+    % Compute cross-correlation using both methods
+    corr_matrix_manual = zeros(num_reps, num_reps);
+    corr_matrix_xcorr = zeros(num_reps, num_reps);
     
     for i = 1:num_reps
         for j = i:num_reps
-            % Compute zero-lag cross-correlation (normalized)
-            corr_matrix(i, j) = sum(all_reps_data(i, :) .* all_reps_data(j, :)) / ...
+            % Manual cross-correlation
+            corr_matrix_manual(i, j) = sum(all_reps_data(i, :) .* all_reps_data(j, :)) / ...
                 (sqrt(sum(all_reps_data(i, :) .^ 2)) * sqrt(sum(all_reps_data(j, :) .^ 2)));
             
-            % Make symmetric
-            corr_matrix(j, i) = corr_matrix(i, j);
+            % MATLAB's `xcorr` function (zero-lag)
+            xcorr_values = xcorr(all_reps_data(i, :), all_reps_data(j, :), 0, 'coeff');
+            corr_matrix_xcorr(i, j) = xcorr_values;
+            
+            % Make matrices symmetric
+            corr_matrix_manual(j, i) = corr_matrix_manual(i, j);
+            corr_matrix_xcorr(j, i) = corr_matrix_xcorr(i, j);
         end
     end
     
     % Store results in the struct
-    crossCorrResults.(muscle_name) = corr_matrix;
+    crossCorrResults.(muscle_name).manual = corr_matrix_manual;
+    crossCorrResults.(muscle_name).xcorr = corr_matrix_xcorr;
     
     % Display results
-    fprintf('Cross-correlation matrix for %s:\n', muscle_name);
-    disp(corr_matrix);
+    fprintf('Cross-correlation matrices for %s:\n', muscle_name);
+    disp('Manual Method:');
+    disp(corr_matrix_manual);
+    disp('xcorr Method:');
+    disp(corr_matrix_xcorr);
     
-    % Plot heatmap if show_plots is enabled
+    % Plot heatmaps if show_plots is enabled
     if show_plots
         figure;
-        imagesc(corr_matrix);
+        subplot(1,2,1);
+        imagesc(corr_matrix_manual);
         colormap jet;
         colorbar;
-        title(['Cross-Correlation Matrix for ' muscle_name]);
+        title(['Manual Cross-Correlation - ' muscle_name]);
         xlabel('Repetition');
         ylabel('Repetition');
         axis square;
-    end
-    
-    % Plot all repetitions in a single plot if show_plots is enabled
-    if show_plots
-        figure;
-        hold on;
-        colors = lines(num_reps); % Generate distinct colors for each repetition
-        for r = 1:num_reps
-            plot(1:1000, all_reps_data(r, :), 'Color', colors(r, :), 'LineWidth', 1.5);
-        end
-        hold off;
-        title(['EMG Envelopes for ' muscle_name ' (All Repetitions)']);
-        xlabel('Time Points');
-        ylabel('EMG Envelope Amplitude');
-        legend(reps, 'Location', 'Best');
+        
+        subplot(1,2,2);
+        imagesc(corr_matrix_xcorr);
+        colormap jet;
+        colorbar;
+        title(['xcorr Cross-Correlation - ' muscle_name]);
+        xlabel('Repetition');
+        ylabel('Repetition');
+        axis square;
     end
 end
 
