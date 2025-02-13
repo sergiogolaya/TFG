@@ -1,5 +1,5 @@
-% Define input and output directories
 clear; clc; close all;
+% Define input and output directories
 data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\postprocessed';
 output_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\normalized';
 
