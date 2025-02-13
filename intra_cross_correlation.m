@@ -64,12 +64,19 @@ for m = 1:length(muscles)
                 (sqrt(sum(all_reps_data(i, :) .^ 2)) * sqrt(sum(all_reps_data(j, :) .^ 2)));
             
             % MATLAB's `xcorr` function (zero-lag)
-            xcorr_values = xcorr(all_reps_data(i, :), all_reps_data(j, :), 0, 'coeff');
-            corr_matrix_xcorr(i, j) = xcorr_values;
+            max_lag = 50; % Allow up to ±50 time shift samples
+
+            % Compute cross-correlation with time shifts
+            [xcorr_values, lags] = xcorr(all_reps_data(i, :), all_reps_data(j, :), max_lag, 'coeff');
             
-            % Make matrices symmetric
+            % Find the highest correlation value within the allowed time shifts
+            [best_corr, best_lag_idx] = max(xcorr_values);
+            best_lag = lags(best_lag_idx);
+            
+            % Store the best correlation value in the matrix
+            corr_matrix_xcorr(i, j) = best_corr;
+            corr_matrix_xcorr(j, i) = best_corr; % Ensure symmetry
             corr_matrix_manual(j, i) = corr_matrix_manual(i, j);
-            corr_matrix_xcorr(j, i) = corr_matrix_xcorr(i, j);
         end
     end
     
