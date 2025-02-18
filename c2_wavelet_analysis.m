@@ -81,7 +81,7 @@ for m = 1:length(muscles)
     % Plot heatmap if enabled
     if show_plots
         figure;
-        imagesc(wavelet_corr_matrix);
+        imagesc(wavelet_corr_matrix, [0 1]); % Set scale from 0 to 1
         colormap jet;
         colorbar;
         title(['Wavelet Cross-Correlation - ' muscle_name]);
