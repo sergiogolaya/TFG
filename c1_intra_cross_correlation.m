@@ -13,14 +13,13 @@ end
 full_file_path = fullfile(input_path, input_file);
 load(full_file_path);
 
-% Extract patient identifier from filename (assuming a pattern like "patient_X.mat")
+% Extract patient identifier from filename
 [~, patient_id, ~] = fileparts(input_file);
 
 % Toggle for plotting
 show_plots = true;  % Set to 'false' to disable plots
-disp_results = false; % Set to 'false' to disable matrix display
 
-% Get muscle names from one repetition (assumes all reps have same muscles)
+% Get muscle names from one repetition
 muscles = fieldnames(emg_data_struct.cut_data_normalized.rep_1);
 
 % Get repetition names
@@ -51,60 +50,31 @@ for m = 1:length(muscles)
         all_reps_data(r, :) = emg_data_struct.cut_data_normalized.(rep_name).(muscle_name).envelope;
     end
     
-    % Compute cross-correlation using both methods
-    corr_matrix_manual = zeros(num_reps, num_reps);
+    % Compute cross-correlation using MATLAB's xcorr function
     corr_matrix_xcorr = zeros(num_reps, num_reps);
+    max_lag = 50; % Allow up to ±50 time shift samples
     
     for i = 1:num_reps
         for j = i:num_reps
-            % Manual cross-correlation
-            corr_matrix_manual(i, j) = sum(all_reps_data(i, :) .* all_reps_data(j, :)) / ...
-                (sqrt(sum(all_reps_data(i, :) .^ 2)) * sqrt(sum(all_reps_data(j, :) .^ 2)));
-            
-            % MATLAB's `xcorr` function (zero-lag)
-            max_lag = 50; % Allow up to ±50 time shift samples
-
             % Compute cross-correlation with time shifts
             [xcorr_values, lags] = xcorr(all_reps_data(i, :), all_reps_data(j, :), max_lag, 'coeff');
             
             % Find the highest correlation value within the allowed time shifts
-            [best_corr, best_lag_idx] = max(xcorr_values);
-            best_lag = lags(best_lag_idx);
+            [best_corr, ~] = max(xcorr_values);
             
             % Store the best correlation value in the matrix
             corr_matrix_xcorr(i, j) = best_corr;
             corr_matrix_xcorr(j, i) = best_corr; % Ensure symmetry
-            corr_matrix_manual(j, i) = corr_matrix_manual(i, j);
         end
     end
     
     % Store results in the struct
-    crossCorrResults.(muscle_name).manual = corr_matrix_manual;
     crossCorrResults.(muscle_name).xcorr = corr_matrix_xcorr;
     
-    if disp_results
-        % Display results
-        fprintf('Cross-correlation matrices for %s:\n', muscle_name);
-        disp('Manual Method:');
-        disp(corr_matrix_manual);
-        disp('xcorr Method:');
-        disp(corr_matrix_xcorr);
-    end
-    
-    % Plot heatmaps if show_plots is enabled
+    % Plot heatmap if show_plots is enabled
     if show_plots
         figure;
-        subplot(1,2,1);
-        imagesc(corr_matrix_manual);
-        colormap jet;
-        colorbar;
-        title(['Manual Cross-Correlation - ' muscle_name]);
-        xlabel('Repetition');
-        ylabel('Repetition');
-        axis square;
-        
-        subplot(1,2,2);
-        imagesc(corr_matrix_xcorr);
+        imagesc(corr_matrix_xcorr, [0.8 1]);
         colormap jet;
         colorbar;
         title(['xcorr Cross-Correlation - ' muscle_name]);
