@@ -105,7 +105,7 @@ end
 disp('Select the start and end region for each repetition (10 clicks: 5 start-end pairs).');
 figure;
 hold on;
-plot(time_vector, envelope_emg(:, 1), 'b', 'DisplayName', 'EMG Envelope');
+plot(time_vector, envelope_emg(:, 3), 'b', 'DisplayName', 'EMG Envelope');
 ylim([0 1.2]);
 
 for k = 1:size(rep_events, 1)
@@ -162,7 +162,7 @@ end
 %% Plot Final Trimmed Repetitions from Struct
 figure;
 hold on;
-plot(emg_data_struct.time, emg_data_struct.original.muscle_1.envelope, 'b', 'DisplayName', 'EMG Envelope');
+plot(emg_data_struct.time, emg_data_struct.original.muscle_3.envelope, 'b', 'DisplayName', 'EMG Envelope');
 ylim([0 1.2]);
 
 % Plot the final trimmed repetitions using the stored struct
@@ -180,7 +180,7 @@ for rep = 1:num_reps
     % Create shaded region for each repetition
     x_patch = [emg_data_struct.time(idx_start); emg_data_struct.time(idx_end); 
                emg_data_struct.time(idx_end); emg_data_struct.time(idx_start)];
-    y_patch = [0; 0; 1; 1] * max(emg_data_struct.original.muscle_1.envelope);
+    y_patch = [0; 0; 1; 1] * max(emg_data_struct.original.muscle_3.envelope);
     patch(x_patch, y_patch, 'g', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
 end
 
