@@ -15,7 +15,7 @@ show_plots = true;
 file_list = dir(fullfile(data_dir, '*.mat'));
 
 % Define the number of interpolation points (100% scale)
-num_points = 101;  % Normalized time axis from 0 to 100%
+num_points = 1000;  % Normalized time axis from 0 to 100%
 
 % Loop through each .mat file
 for f = 1:length(file_list)
@@ -45,42 +45,49 @@ for f = 1:length(file_list)
     normalized_plot_data = [];
 
     % Loop through repetitions
+    % Define the number of target points for interpolation
+    num_points = 1000;  % Target: 1000 samples per repetition
+    
+    % Loop through repetitions
     for r = 1:length(reps)
         rep_name = reps{r};
-
+    
         % Loop through muscles
         for m = 1:length(muscles)
             muscle_name = muscles{m};
-
+    
             % Extract the envelope data
             envelope_data = data.emg_data_struct.cut_data.(rep_name).(muscle_name).envelope;
-
+    
             % Check if data is valid
             if isempty(envelope_data)
                 fprintf('Skipping %s -> %s (empty data)\n', rep_name, muscle_name);
                 continue;
             end
-
-            % Generate the original time axis (assuming equal spacing)
+    
+            % Fill missing data to prevent interpolation errors
+            envelope_data = fillmissing(envelope_data, 'linear');
+    
+            % Generate the original time axis
             original_time = linspace(0, 100, length(envelope_data));
-
+    
             % Generate the new normalized time axis
-            num_points = 1000;  % Increase resolution
             normalized_time = linspace(0, 100, num_points);
-
-            % Perform interpolation
-            normalized_envelope = interp1(original_time, envelope_data, normalized_time, 'linear');
-
+    
+            % Perform smooth interpolation
+            normalized_envelope = interp1(original_time, envelope_data, normalized_time, 'pchip');
+    
             % Store the normalized data
             data.emg_data_struct.cut_data_normalized.(rep_name).(muscle_name).envelope = normalized_envelope;
-
-            % Store data for plotting if this is the first rep & muscle
+    
+            % Store data for plotting (only first rep & muscle)
             if r == 1 && m == 1
                 original_plot_data = envelope_data;
                 normalized_plot_data = normalized_envelope;
             end
         end
     end
+
 
     % Save the new .mat file in the output directory
     new_file_name = strrep(file_name, '.mat', '_normalized.mat');
