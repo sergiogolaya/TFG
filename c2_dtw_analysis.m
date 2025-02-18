@@ -1,3 +1,4 @@
+% Dynamic Time Warping Analysis
 % Define the path to the normalized data folder
 base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\normalized';
 
