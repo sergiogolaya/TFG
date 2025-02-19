@@ -14,10 +14,20 @@ crossCorrResults = struct();
 
 % Load all subject data
 subjects_data = struct();
+subject_ids = {}; % Store extracted subject IDs
 
 for f = 1:length(file_list)
     file_name = file_list(f).name;
     full_path = fullfile(data_dir, file_name);
+    
+    % Extract subject ID from filename (matches pattern: "pX")
+    subject_match = regexp(file_name, 'processed_(p\d+)_normalized', 'tokens');
+    if isempty(subject_match)
+        warning('Could not extract subject ID from filename: %s', file_name);
+        continue;
+    end
+    subject_id = subject_match{1}{1}; % Extract "pX"
+    subject_ids{end+1} = subject_id; % Store for axis labels
     
     % Load the correct structure
     loaded_data = load(full_path);
@@ -30,15 +40,12 @@ for f = 1:length(file_list)
         continue;
     end
     
-    % Extract subject identifier from filename
-    [~, subject_id, ~] = fileparts(file_name);
-    
     % Store the subject's data
     subjects_data.(subject_id) = emg_data;
 end
 
-% Get subject IDs
-subject_ids = fieldnames(subjects_data);
+% Convert subject IDs to a column cell array for consistent sorting
+subject_ids = subject_ids(:);
 num_subjects = length(subject_ids);
 
 % Get muscle names from the first subject (assuming consistency)
@@ -53,17 +60,17 @@ for m = 1:length(muscles)
     all_subjects_data = zeros(num_subjects, 1000); % Assuming all have 1000 time points
     
     for s = 1:num_subjects
-        subject_id = subject_ids{s};
+        subj_id = subject_ids{s};
         
         % Check if the subject has the muscle field
-        if ~isfield(subjects_data.(subject_id), muscle_name)
-            warning('Muscle %s not found for subject %s. Skipping...', muscle_name, subject_id);
+        if ~isfield(subjects_data.(subj_id), muscle_name)
+            warning('Muscle %s not found for subject %s. Skipping...', muscle_name, subj_id);
             continue;
         end
         
         % Extract envelope and std_dev
-        envelope = subjects_data.(subject_id).(muscle_name).envelope;
-        std_dev = subjects_data.(subject_id).(muscle_name).std_dev;
+        envelope = subjects_data.(subj_id).(muscle_name).envelope;
+        std_dev = subjects_data.(subj_id).(muscle_name).std_dev;
         
         % Normalize envelope using standard deviation
         if any(std_dev ~= 0)  % Avoid division by zero
@@ -97,7 +104,7 @@ for m = 1:length(muscles)
     % Store results in the struct
     crossCorrResults.(muscle_name).xcorr = corr_matrix_xcorr;
     
-    % Plot heatmap
+    % Plot heatmap with subject IDs
     figure;
     imagesc(corr_matrix_xcorr, [0.6 1]);
     colormap jet;
