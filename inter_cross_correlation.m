@@ -1,106 +1,127 @@
-% Define the directory containing normalized data from all patients
-data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\normalized';
+% Define the path to the combined EMG data directory
+data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\combined_emg';
 
-% Get a list of all .mat files in the directory
+% Get all .mat files in the directory
 file_list = dir(fullfile(data_dir, '*.mat'));
 
-% Check if there are any files
+% Ensure there are files to process
 if isempty(file_list)
-    error('No .mat files found in the directory.');
+    error('No .mat files found in the specified directory.');
 end
-
-% Initialize a structure to store patient data
-patient_data = struct();
-
-% Load all patient data
-for f = 1:length(file_list)
-    % Load file
-    file_name = file_list(f).name;
-    file_path = fullfile(file_list(f).folder, file_name);
-    load(file_path);
-    
-    % Extract patient identifier from filename
-    [~, patient_id, ~] = fileparts(file_name);
-    
-    % Store data in struct
-    patient_data.(patient_id) = data.emg_data_struct.cut_data_normalized;
-end
-
-% Get list of patients
-patient_ids = fieldnames(patient_data);
-
-% Select one patient as reference to get muscle and repetition names
-ref_patient = patient_ids{1};
-muscles = fieldnames(patient_data.(ref_patient).rep_1);
-repetitions = fieldnames(patient_data.(ref_patient));
 
 % Initialize a structure to store cross-correlation results
 crossCorrResults = struct();
 
-% Define the save directory
-save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\inter_subject_cross_correlation';
+% Load all subject data
+subjects_data = struct();
+
+for f = 1:length(file_list)
+    file_name = file_list(f).name;
+    full_path = fullfile(data_dir, file_name);
+    
+    % Load the correct structure
+    loaded_data = load(full_path);
+    
+    % Check if 'combined_emg_struct' exists in the file
+    if isfield(loaded_data, 'combined_emg_struct')
+        emg_data = loaded_data.combined_emg_struct;
+    else
+        warning('Variable combined_emg_struct not found in file: %s', file_name);
+        continue;
+    end
+    
+    % Extract subject identifier from filename
+    [~, subject_id, ~] = fileparts(file_name);
+    
+    % Store the subject's data
+    subjects_data.(subject_id) = emg_data;
+end
+
+% Get subject IDs
+subject_ids = fieldnames(subjects_data);
+num_subjects = length(subject_ids);
+
+% Get muscle names from the first subject (assuming consistency)
+first_subject_data = subjects_data.(subject_ids{1});
+muscles = fieldnames(first_subject_data);
+
+% Loop through each muscle
+for m = 1:length(muscles)
+    muscle_name = muscles{m};
+    
+    % Extract weighted envelope data for each subject
+    all_subjects_data = zeros(num_subjects, 1000); % Assuming all have 1000 time points
+    
+    for s = 1:num_subjects
+        subject_id = subject_ids{s};
+        
+        % Check if the subject has the muscle field
+        if ~isfield(subjects_data.(subject_id), muscle_name)
+            warning('Muscle %s not found for subject %s. Skipping...', muscle_name, subject_id);
+            continue;
+        end
+        
+        % Extract envelope and std_dev
+        envelope = subjects_data.(subject_id).(muscle_name).envelope;
+        std_dev = subjects_data.(subject_id).(muscle_name).std_dev;
+        
+        % Normalize envelope using standard deviation
+        if any(std_dev ~= 0)  % Avoid division by zero
+            weighted_envelope = envelope ./ std_dev;
+        else
+            weighted_envelope = envelope; % If std_dev is zero, keep original
+        end
+        
+        % Store weighted envelope
+        all_subjects_data(s, :) = weighted_envelope;
+    end
+    
+    % Compute cross-correlation across subjects
+    corr_matrix_xcorr = zeros(num_subjects, num_subjects);
+    max_lag = 50; % Allow up to ±50 time shift samples
+    
+    for i = 1:num_subjects
+        for j = i:num_subjects
+            % Compute cross-correlation with time shifts
+            [xcorr_values, lags] = xcorr(all_subjects_data(i, :), all_subjects_data(j, :), max_lag, 'coeff');
+            
+            % Find the highest correlation value within the allowed time shifts
+            [best_corr, ~] = max(xcorr_values);
+            
+            % Store the best correlation value in the matrix
+            corr_matrix_xcorr(i, j) = best_corr;
+            corr_matrix_xcorr(j, i) = best_corr; % Ensure symmetry
+        end
+    end
+    
+    % Store results in the struct
+    crossCorrResults.(muscle_name).xcorr = corr_matrix_xcorr;
+    
+    % Plot heatmap
+    figure;
+    imagesc(corr_matrix_xcorr, [0.6 1]);
+    colormap jet;
+    colorbar;
+    title(['xcorr Cross-Correlation Between Subjects (Weighted) - ' muscle_name]);
+    xlabel('Subject');
+    ylabel('Subject');
+    xticks(1:num_subjects);
+    yticks(1:num_subjects);
+    xticklabels(subject_ids);
+    yticklabels(subject_ids);
+    axis square;
+end
+
+% Define the save directory for results
+save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\inter_cross_correlation';
 
 % Ensure the directory exists
 if ~exist(save_dir, 'dir')
     mkdir(save_dir);
 end
 
-% Loop through each muscle
-for m = 1:length(muscles)
-    muscle_name = muscles{m};
-    
-    % Loop through each repetition
-    for r = 1:length(repetitions)
-        rep_name = repetitions{r};
-        
-        % Collect data from all patients for this muscle and repetition
-        num_patients = length(patient_ids);
-        all_patients_data = zeros(num_patients, 1000); % Assuming 1000 time points
-
-        for p = 1:num_patients
-            patient_id = patient_ids{p};
-            all_patients_data(p, :) = patient_data.(patient_id).(rep_name).(muscle_name).envelope;
-        end
-
-        % Compute cross-correlation between patients
-        corr_matrix = zeros(num_patients, num_patients);
-        
-        for i = 1:num_patients
-            for j = i:num_patients
-                % Compute zero-lag cross-correlation (normalized)
-                corr_matrix(i, j) = sum(all_patients_data(i, :) .* all_patients_data(j, :)) / ...
-                    (sqrt(sum(all_patients_data(i, :) .^ 2)) * sqrt(sum(all_patients_data(j, :) .^ 2)));
-                
-                % Make symmetric
-                corr_matrix(j, i) = corr_matrix(i, j);
-            end
-        end
-        
-        % Store results
-        crossCorrResults.(muscle_name).(rep_name) = corr_matrix;
-        
-        % Display results
-        fprintf('Cross-correlation matrix for %s - %s:\n', muscle_name, rep_name);
-        disp(corr_matrix);
-        
-        % Plot heatmap
-        figure;
-        imagesc(corr_matrix);
-        colormap jet;
-        colorbar;
-        title(['Cross-Correlation: ' muscle_name ' - ' rep_name]);
-        xlabel('Patient');
-        ylabel('Patient');
-        axis square;
-        xticks(1:num_patients);
-        xticklabels(patient_ids);
-        yticks(1:num_patients);
-        yticklabels(patient_ids);
-    end
-end
-
 % Save results
-save_filename = fullfile(save_dir, 'crossCorrResults_between_patients.mat');
+save_filename = fullfile(save_dir, 'crossCorrResults_subjects_weighted.mat');
 save(save_filename, 'crossCorrResults');
 
-fprintf('Inter-subject cross-correlation results saved to: %s\n', save_filename);
+fprintf('Cross-correlation results (weighted by std_dev) saved to: %s\n', save_filename);
