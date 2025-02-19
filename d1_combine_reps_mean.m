@@ -1,74 +1,89 @@
-% Combinar 5 repeticiones de EMG en una sola y visualizar los resultados
+% Combine 5 EMG repetitions using the mean and visualize with standard deviation
 
-% Definir el directorio base donde se encuentran los datos normalizados
+% Define the base directory for normalized EMG data
 base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\normalized';
 
-% Seleccionar el archivo .mat con los datos normalizados
+% Select the .mat file containing the normalized data
 [input_file, input_path] = uigetfile(fullfile(base_path, '*.mat'), 'Select Normalized EMG Data File');
 
-% Verificar si el usuario canceló la selección
+% Check if the user canceled the selection
 if isequal(input_file, 0)
-    error('No file selected');
+    error('No file selected.');
 end
 
-% Cargar el archivo seleccionado
+% Load the selected file
 full_file_path = fullfile(input_path, input_file);
 load(full_file_path);
 
-% Obtener el identificador del paciente desde el nombre del archivo
+% Extract patient identifier from filename
 [~, patient_id, ~] = fileparts(input_file);
 
-% Obtener lista de músculos
+% Get available muscles from one repetition
 muscles = fieldnames(emg_data_struct.cut_data_normalized.rep_1);
 
-% Obtener nombres de repeticiones
+% Get repetition names
 reps = fieldnames(emg_data_struct.cut_data_normalized);
 num_reps = length(reps);
 
-% Inicializar estructura para almacenar los datos combinados
+% Initialize structure to store the combined EMG data
 combined_emg_struct = struct();
 
-% Crear una figura para visualizar los resultados
+% Create a figure for visualization
 figure;
 tiledlayout(length(muscles), 1);
-sgtitle('Señales de EMG combinadas (Media de 5 repeticiones)');
+sgtitle('EMG Signals Combined (Mean ± Std Dev)');
 
-% Iterar sobre cada músculo
+% Loop through each muscle
 for m = 1:length(muscles)
     muscle_name = muscles{m};
     
-    % Inicializar matriz para almacenar las repeticiones
+    % Get the number of samples (assuming all reps have the same length)
     sample_length = length(emg_data_struct.cut_data_normalized.rep_1.(muscle_name).envelope);
+    
+    % Initialize a matrix to store all repetitions
     rep_data = zeros(sample_length, num_reps);
     
-    % Extraer los datos de todas las repeticiones
+    % Extract data from all repetitions
     for i = 1:num_reps
         rep_data(:, i) = emg_data_struct.cut_data_normalized.(reps{i}).(muscle_name).envelope;
     end
     
-    % Calcular la media de las repeticiones
+    % Compute mean and standard deviation
     combined_signal = mean(rep_data, 2);
-    combined_emg_struct.(muscle_name).envelope = combined_signal;
+    std_dev = std(rep_data, 0, 2); % Standard deviation across repetitions
     
-    % Graficar la señal combinada
+    % Store in the struct
+    combined_emg_struct.(muscle_name).envelope = combined_signal;
+    combined_emg_struct.(muscle_name).std_dev = std_dev;
+    
+    % Plot the combined signal with standard deviation shading
     nexttile;
-    plot(combined_signal, 'LineWidth', 1.5);
+    time_vector = 1:sample_length;
+    fill([time_vector, fliplr(time_vector)], ...
+         [combined_signal - std_dev; flipud(combined_signal + std_dev)], ...
+         [0.8, 0.8, 0.8], 'EdgeColor', 'none', 'FaceAlpha', 0.5); % Shaded region
+    
+    hold on;
+    plot(time_vector, combined_signal, 'b', 'LineWidth', 1.5);
+    hold off;
+    
     title(muscle_name, 'Interpreter', 'none');
-    xlabel('Muestras');
-    ylabel('Amplitud');
+    xlabel('Samples');
+    ylabel('Amplitude');
     grid on;
+    legend('Std Dev', 'Mean', 'Location', 'Best');
 end
 
-% Definir directorio para guardar el archivo combinado
+% Define save directory for the combined data
 save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\combined_emg';
 
-% Crear el directorio si no existe
+% Create the directory if it does not exist
 if ~exist(save_dir, 'dir')
     mkdir(save_dir);
 end
 
-% Guardar el archivo combinado con el identificador del paciente
-save_filename = fullfile(save_dir, ['combined_emg_' patient_id '.mat']);
+% Save the combined EMG data
+save_filename = fullfile(save_dir, ['combined_emg_std_' patient_id '.mat']);
 save(save_filename, 'combined_emg_struct');
 
-fprintf('Datos combinados guardados en: %s\n', save_filename);
+fprintf('PCA-combined EMG data saved to: %s\n', save_filename);
