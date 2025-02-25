@@ -25,46 +25,88 @@ muscle_names = { ...
     'Extensor Carpi Radialis', 'muscle_8' ...
 };
 
-% Let the user select a muscle
-[muscle_index, is_selected] = listdlg('PromptString', 'Select a muscle:', ...
-                                      'SelectionMode', 'single', ...
-                                      'ListString', muscle_names(:,1));
+% Ask the user if they want to plot all muscles or select one
+plot_all = questdlg('Do you want to plot all muscles?', ...
+                    'Plot Option', 'Yes', 'No', 'No');
 
-% Check if the user made a selection
-if ~is_selected
-    error('No muscle selected.');
+if strcmp(plot_all, 'Yes')
+    % Loop through all muscles and plot each one in a separate figure
+    for m = 1:size(muscle_names, 1)
+        selected_muscle_name = muscle_names{m, 1};
+        selected_muscle_field = muscle_names{m, 2};
+
+        % Get repetition names
+        reps = fieldnames(emg_data_struct.cut_data_normalized);
+        num_reps = length(reps);
+
+        % Get the number of time points (assuming all have the same length)
+        sample_length = length(emg_data_struct.cut_data_normalized.rep_1.(selected_muscle_field).envelope);
+
+        % Initialize matrix to store envelope data (num_reps x time_points)
+        all_reps_data = zeros(num_reps, sample_length);
+
+        % Extract envelope data from each repetition
+        for r = 1:num_reps
+            rep_name = reps{r};
+            all_reps_data(r, :) = emg_data_struct.cut_data_normalized.(rep_name).(selected_muscle_field).envelope;
+        end
+
+        % Plot all repetitions for the current muscle
+        figure;
+        hold on;
+        colors = lines(num_reps); % Generate distinct colors for each repetition
+        for r = 1:num_reps
+            plot(1:sample_length, all_reps_data(r, :), 'Color', colors(r, :), 'LineWidth', 1.5);
+        end
+        hold off;
+        title(['EMG Envelopes for ' selected_muscle_name ' (All Repetitions)']);
+        xlabel('Time Points');
+        ylabel('EMG Envelope Amplitude');
+        legend(reps, 'Location', 'Best');
+        grid on;
+    end
+else
+    % Let the user select a single muscle
+    [muscle_index, is_selected] = listdlg('PromptString', 'Select a muscle:', ...
+                                          'SelectionMode', 'single', ...
+                                          'ListString', muscle_names(:,1));
+
+    % Check if the user made a selection
+    if ~is_selected
+        error('No muscle selected.');
+    end
+
+    % Get the selected muscle's corresponding field name
+    selected_muscle_name = muscle_names{muscle_index, 1};
+    selected_muscle_field = muscle_names{muscle_index, 2};
+
+    % Get repetition names
+    reps = fieldnames(emg_data_struct.cut_data_normalized);
+    num_reps = length(reps);
+
+    % Get the number of time points (assuming all have the same length)
+    sample_length = length(emg_data_struct.cut_data_normalized.rep_1.(selected_muscle_field).envelope);
+
+    % Initialize matrix to store envelope data (num_reps x time_points)
+    all_reps_data = zeros(num_reps, sample_length);
+
+    % Extract envelope data from each repetition
+    for r = 1:num_reps
+        rep_name = reps{r};
+        all_reps_data(r, :) = emg_data_struct.cut_data_normalized.(rep_name).(selected_muscle_field).envelope;
+    end
+
+    % Plot all repetitions for the selected muscle
+    figure;
+    hold on;
+    colors = lines(num_reps); % Generate distinct colors for each repetition
+    for r = 1:num_reps
+        plot(1:sample_length, all_reps_data(r, :), 'Color', colors(r, :), 'LineWidth', 1.5);
+    end
+    hold off;
+    title(['EMG Envelopes for ' selected_muscle_name ' (All Repetitions)']);
+    xlabel('Time Points');
+    ylabel('EMG Envelope Amplitude');
+    legend(reps, 'Location', 'Best');
+    grid on;
 end
-
-% Get the selected muscle's corresponding field name
-selected_muscle_name = muscle_names{muscle_index, 1};
-selected_muscle_field = muscle_names{muscle_index, 2};
-
-% Get repetition names
-reps = fieldnames(emg_data_struct.cut_data_normalized);
-num_reps = length(reps);
-
-% Get the number of time points (assuming all have the same length)
-sample_length = length(emg_data_struct.cut_data_normalized.rep_1.(selected_muscle_field).envelope);
-
-% Initialize matrix to store envelope data (num_reps x time_points)
-all_reps_data = zeros(num_reps, sample_length);
-
-% Extract envelope data from each repetition
-for r = 1:num_reps
-    rep_name = reps{r};
-    all_reps_data(r, :) = emg_data_struct.cut_data_normalized.(rep_name).(selected_muscle_field).envelope;
-end
-
-% Plot all repetitions for the selected muscle
-figure;
-hold on;
-colors = lines(num_reps); % Generate distinct colors for each repetition
-for r = 1:num_reps
-    plot(1:sample_length, all_reps_data(r, :), 'Color', colors(r, :), 'LineWidth', 1.5);
-end
-hold off;
-title(['EMG Envelopes for ' selected_muscle_name ' (All Repetitions)']);
-xlabel('Time Points');
-ylabel('EMG Envelope Amplitude');
-legend(reps, 'Location', 'Best');
-grid on;
