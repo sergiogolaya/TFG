@@ -1,6 +1,9 @@
 % Define the path to the combined EMG data directory
 data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\combined_emg';
 
+show_console_output = true;
+show_plots = true;
+
 % Get all .mat files in the directory
 file_list = dir(fullfile(data_dir, '*.mat'));
 
@@ -100,23 +103,41 @@ for m = 1:length(muscles)
             corr_matrix_xcorr(j, i) = best_corr; % Ensure symmetry
         end
     end
+
+    % Extract non-diagonal values
+    non_diag_values = corr_matrix_xcorr(~eye(num_reps));
+
+    % Compute mean and standard deviation of cross-correlation values
+    mean_corr = mean(non_diag_values);
+    std_corr = std(non_diag_values);
     
     % Store results in the struct
     crossCorrResults.(muscle_name).xcorr = corr_matrix_xcorr;
+    crossCorrResults.(muscle_name).mean_corr = mean_corr;
+    crossCorrResults.(muscle_name).std_corr = std_corr;
+
+    % Display results if enabled
+    if show_console_output
+        fprintf('Patient: %s | Muscle: %s\n', patient_id, muscle_name);
+        fprintf('Mean correlation (excluding diagonal): %.4f\n', mean_corr);
+        fprintf('Standard deviation: %.4f\n\n', std_corr);
+    end
     
     % Plot heatmap with subject IDs
-    figure;
-    imagesc(corr_matrix_xcorr, [0.6 1]);
-    colormap jet;
-    colorbar;
-    title(['xcorr Cross-Correlation Between Subjects (Weighted) - ' muscle_name]);
-    xlabel('Subject');
-    ylabel('Subject');
-    xticks(1:num_subjects);
-    yticks(1:num_subjects);
-    xticklabels(subject_ids);
-    yticklabels(subject_ids);
-    axis square;
+    if show_plots
+        figure;
+        imagesc(corr_matrix_xcorr, [0.6 1]);
+        colormap jet;
+        colorbar;
+        title(['xcorr Cross-Correlation Between Subjects (Weighted) - ' muscle_name]);
+        xlabel('Subject');
+        ylabel('Subject');
+        xticks(1:num_subjects);
+        yticks(1:num_subjects);
+        xticklabels(subject_ids);
+        yticklabels(subject_ids);
+        axis square;
+    end
 end
 
 % Define the save directory for results
