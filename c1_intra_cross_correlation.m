@@ -68,8 +68,22 @@ for m = 1:length(muscles)
         end
     end
     
+    % Extract non-diagonal values
+    non_diag_values = corr_matrix_xcorr(~eye(num_reps)); 
+    
+    % Compute mean and standard deviation of the cross-correlation values (excluding diagonal)
+    mean_corr = mean(non_diag_values);
+    std_corr = std(non_diag_values);
+
     % Store results in the struct
     crossCorrResults.(muscle_name).xcorr = corr_matrix_xcorr;
+    crossCorrResults.(muscle_name).mean_corr = mean_corr;
+    crossCorrResults.(muscle_name).std_corr = std_corr;
+    
+    % Display results
+    fprintf('Muscle: %s\n', muscle_name);
+    fprintf('Mean correlation (excluding diagonal): %.4f\n', mean_corr);
+    fprintf('Standard deviation: %.4f\n\n', std_corr);
     
     % Plot heatmap if show_plots is enabled
     if show_plots
