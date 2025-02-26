@@ -1,5 +1,14 @@
+% set to true to plot aligned data (DTW)
+used_dtw = false;
+
+if used_dtw
+    used_directory = 'aligned_dtw';
+else
+    used_directory = 'normalized';
+end
+
 % Define the path to the normalized data folder
-base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\normalized';
+base_path = strcat('C:\Users\sergi\Documents\CEU\TFG\medidas\patients\', used_directory);
 
 % Use a file selection dialog to choose the .mat file
 [input_file, input_path] = uigetfile(fullfile(base_path, '*.mat'), 'Select Normalized EMG Data File');
