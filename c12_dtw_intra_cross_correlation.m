@@ -1,32 +1,14 @@
 clear; clc; close all;
 
-% If you used DTW aligning before this script, set this to true
-dtw_alignment = true;
-
-% Define the path to the aligned or normalized data
-base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\';
-
-if dtw_alignment
-    used_directory = 'aligned_dtw';
-    used_struct_string = 'aligned_data';
-else
-    used_directory = 'normalized';
-    used_struct_string = 'emg_data_struct';
-end
-
-full_path = fullfile(base_path, used_directory);
-
-% Check if the directory exists
-if ~exist(full_path, 'dir')
-    error(['The directory "' full_path '" does not exist. Check your path.']);
-end
+% Define the path to the aligned data folder
+base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\aligned_dtw';
 
 % Get a list of all .mat files in the directory
-file_list = dir(fullfile(full_path, '*.mat'));
+file_list = dir(fullfile(base_path, '*.mat'));
 
 % Check if there are any files
 if isempty(file_list)
-    error('No .mat files found in the selected directory.');
+    error('No .mat files found in the directory.');
 end
 
 % Define toggles
@@ -46,25 +28,16 @@ for f = 1:length(file_list)
     % Load file
     file_name = file_list(f).name;
     file_path = fullfile(file_list(f).folder, file_name);
-    
-    % Load the appropriate variable
-    loaded_data = load(file_path); 
-    
-    % Check if the variable exists in the loaded data
-    if isfield(loaded_data, used_struct_string)
-        used_struct = loaded_data.(used_struct_string);
-    else
-        error('Variable "%s" not found in file: %s', used_struct_string, file_name);
-    end
+    load(file_path, 'aligned_data'); % Load the correct struct name
 
     % Extract patient identifier from filename
     [~, patient_id, ~] = fileparts(file_name);
 
     % Get available muscles
-    muscles = fieldnames(used_struct);
+    muscles = fieldnames(aligned_data);
 
     % Get repetition names (aligned_data contains repetitions per muscle)
-    reps = fieldnames(used_struct.(muscles{1}));
+    reps = fieldnames(aligned_data.(muscles{1}));
     num_reps = length(reps);
 
     % Initialize structure to store cross-correlation results
@@ -82,7 +55,7 @@ for f = 1:length(file_list)
         all_reps_data = zeros(num_reps, 1000); % Assuming all have 1000 time points
         for r = 1:num_reps
             rep_name = reps{r};
-            all_reps_data(r, :) = used_struct.(muscle_name).(rep_name).envelope;
+            all_reps_data(r, :) = aligned_data.(muscle_name).(rep_name).envelope;
         end
 
         % Compute cross-correlation for all repetitions
