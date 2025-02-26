@@ -12,7 +12,7 @@ if isempty(file_list)
 end
 
 % Define toggles
-show_plots = true;  % Set to 'false' to disable plots
+show_plots = false;  % Set to 'false' to disable plots
 show_console_output = false; % Set to 'false' to disable console messages
 
 % Define the save directory
