@@ -71,7 +71,7 @@ for m = 1:num_muscles
     end
     
     % Generate plot with dynamic std shading
-    figure;
+    figure('Position', [100, 100, 1200, 800]); % Set figure size to 1200x800 pixels
     hold on;
     
     % Plot mean envelope
@@ -83,18 +83,19 @@ for m = 1:num_muscles
          'b', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
     
     hold off;
-    xlabel('% Reach and Grasp Cycle');
-    ylabel('Normalized EMG Activity');
-    title(['Representative EMG Profile - ', muscle_name]);
-    legend({'Mean EMG', '± Std Dev'}, 'Location', 'best');
+    xlabel('% Reach and Grasp Cycle', 'FontSize', 16);
+    ylabel('Normalized EMG Activity', 'FontSize', 16);
+    title(['Representative EMG Profile - ', muscle_name], 'FontSize', 18);
+    legend({'Mean EMG', '± Std Dev'}, 'Location', 'best', 'FontSize', 14);
     grid on;
     
-    % Save figure
+    % Save figure as high-resolution PNG (300 DPI)
     saveas(gcf, fullfile(save_dir, [muscle_fields{m}, '_emg_curve.png']));
+    print(gcf, fullfile(save_dir, [muscle_fields{m}, '_emg_curve.png']), '-dpng', '-r300'); % Save with 300 DPI
     close(gcf);
 end
 
 % Save the structured EMG results in a .mat file
 save(fullfile(save_dir, 'representative_emg_curve.mat'), 'emg_results');
 
-disp('Representative EMG curves computed and saved.');
+disp('Representative EMG curves computed and saved with high resolution.');
