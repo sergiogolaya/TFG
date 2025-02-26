@@ -1,4 +1,4 @@
-% Combine 5 EMG repetitions using Principal Component Analysis (PCA)
+% Combine 5 EMG repetitions using Principal Component Analysis (PCA) with enhanced features
 
 % Define the base directory for normalized EMG data
 base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\normalized';
@@ -25,13 +25,16 @@ muscles = fieldnames(emg_data_struct.cut_data_normalized.rep_1);
 reps = fieldnames(emg_data_struct.cut_data_normalized);
 num_reps = length(reps);
 
-% Initialize structure to store the combined EMG data
+% Initialize structure to store the PCA-combined EMG data
 combined_emg_struct = struct();
 
 % Create a figure for visualization
-figure;
-tiledlayout(length(muscles), 1);
-sgtitle('EMG Signals Combined Using PCA');
+enable_plots = true;
+if enable_plots
+    figure;
+    tiledlayout(length(muscles), 2);
+    sgtitle(['EMG Signals Combined Using PCA - ' patient_id]);
+end
 
 % Loop through each muscle
 for m = 1:length(muscles)
@@ -49,30 +52,42 @@ for m = 1:length(muscles)
     end
     
     % Apply Principal Component Analysis (PCA)
-    [coeff, score, ~] = pca(rep_data); % Perform PCA
-    combined_signal = score(:, 1); % Use the first principal component
+    [coeff, score, explained] = pca(rep_data);
+    pca_signal = score(:, 1); % Use the first principal component
     
     % Store the combined signal
-    combined_emg_struct.(muscle_name).envelope = combined_signal;
+    combined_emg_struct.(muscle_name).envelope = pca_signal;
+    combined_emg_struct.(muscle_name).explained_variance = explained(1);
     
-    % Plot the combined signal
-    nexttile;
-    plot(combined_signal, 'LineWidth', 1.5);
-    title(muscle_name, 'Interpreter', 'none');
-    xlabel('Samples');
-    ylabel('Amplitude');
-    grid on;
+    % Plot PCA result if enabled
+    if enable_plots
+        % Plot First Principal Component
+        nexttile;
+        plot(pca_signal, 'r', 'LineWidth', 1.5);
+        title([muscle_name ' - PCA (PC1)'], 'Interpreter', 'none');
+        xlabel('Samples');
+        ylabel('Amplitude');
+        grid on;
+        
+        % Plot Explained Variance of Principal Components
+        nexttile;
+        bar(explained);
+        title([muscle_name ' - Explained Variance'], 'Interpreter', 'none');
+        xlabel('Principal Component');
+        ylabel('Variance Explained (%)');
+        grid on;
+    end
 end
 
 % Define save directory for the combined data
-save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\combined_emg';
+save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\pca_combined_emg';
 
 % Create the directory if it does not exist
 if ~exist(save_dir, 'dir')
     mkdir(save_dir);
 end
 
-% Save the combined EMG data
+% Save the PCA-combined EMG data
 save_filename = fullfile(save_dir, ['combined_emg_PCA_' patient_id '.mat']);
 save(save_filename, 'combined_emg_struct');
 
