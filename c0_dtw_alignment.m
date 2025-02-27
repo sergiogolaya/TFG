@@ -14,7 +14,7 @@ clc; clear; close all;
 
 % Define directories
 data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\normalized';
-save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\aligned_dtw';
+save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\dtw_aligned';
 if ~exist(save_dir, 'dir')
     mkdir(save_dir);
 end

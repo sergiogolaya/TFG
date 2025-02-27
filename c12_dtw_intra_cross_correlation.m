@@ -1,7 +1,7 @@
 clear; clc; close all;
 
 % Define the path to the aligned data folder
-base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\aligned_dtw';
+base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\dtw_aligned';
 
 % Get a list of all .mat files in the directory
 file_list = dir(fullfile(base_path, '*.mat'));

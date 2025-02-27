@@ -2,7 +2,7 @@
 used_dtw = false;
 
 if used_dtw
-    used_directory = 'aligned_dtw';
+    used_directory = 'dtw_aligned';
 else
     used_directory = 'normalized';
 end
