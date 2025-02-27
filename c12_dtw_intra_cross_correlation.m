@@ -16,7 +16,7 @@ show_plots = false;  % Set to 'false' to disable plots
 show_console_output = false; % Set to 'false' to disable console messages
 
 % Define the save directory
-save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\intra_cross_correlation';
+save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\dtw_intra_cross_correlation';
 
 % Ensure the directory exists
 if ~exist(save_dir, 'dir')
