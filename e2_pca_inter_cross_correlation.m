@@ -1,6 +1,6 @@
-% Define the path to the PCA combined EMG data directory
+% Define directories
 data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\pca_combined_emg';
-save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\pca_inter_cross_correlation';
+save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\pca_cross_correlation';
 
 if ~exist(save_dir, 'dir')
     mkdir(save_dir);
@@ -17,13 +17,11 @@ if isempty(file_list)
     error('No .mat files found in the specified directory.');
 end
 
-% Initialize a structure to store cross-correlation results
-crossCorrResults = struct();
-
-% Load all subject data
+% Initialize storage for subject data
 subjects_data = struct();
 subject_ids = {}; % Store extracted subject IDs
 
+% Load all subject data
 for f = 1:length(file_list)
     file_name = file_list(f).name;
     full_path = fullfile(data_dir, file_name);
@@ -37,7 +35,7 @@ for f = 1:length(file_list)
     subject_id = subject_match{1}{1}; % Extract "pX"
     subject_ids{end+1} = subject_id; % Store for axis labels
     
-    % Load the correct structure
+    % Load the .mat file
     loaded_data = load(full_path);
     
     % Check if 'combined_emg_struct' exists in the file
@@ -60,37 +58,35 @@ num_subjects = length(subject_ids);
 first_subject_data = subjects_data.(subject_ids{1});
 muscles = fieldnames(first_subject_data);
 
+% Initialize structure for cross-correlation results
+crossCorrResults = struct();
+max_lag = 50; % Allow up to ±50 time shift samples
+
 % Loop through each muscle
 for m = 1:length(muscles)
     muscle_name = muscles{m};
     
     % Extract PCA envelope data for each subject
-    all_subjects_data = zeros(num_subjects, 1000); % Assuming all have 1000 time points
+    num_samples = length(subjects_data.(subject_ids{1}).(muscle_name).envelope); % Get time length
+    all_subjects_data = zeros(num_samples, num_subjects); % (time_points x subjects)
     
     for s = 1:num_subjects
         subj_id = subject_ids{s};
         
-        % Check if the subject has the muscle field
-        if ~isfield(subjects_data.(subj_id), muscle_name)
-            warning('Muscle %s not found for subject %s. Skipping...', muscle_name, subj_id);
-            continue;
-        end
-        
-        % Extract PCA envelope properly
-        envelope = subjects_data.(subj_id).(muscle_name).envelope; % Corrected extraction
+        % Extract PCA envelope
+        envelope = subjects_data.(subj_id).(muscle_name).envelope;
         
         % Store envelope data
-        all_subjects_data(s, :) = envelope(:)';
+        all_subjects_data(:, s) = envelope(:);
     end
     
     % Compute cross-correlation across subjects
     corr_matrix_xcorr = zeros(num_subjects, num_subjects);
-    max_lag = 50; % Allow up to ±50 time shift samples
     
     for i = 1:num_subjects
         for j = i:num_subjects
             % Compute cross-correlation with time shifts
-            [xcorr_values, lags] = xcorr(all_subjects_data(i, :), all_subjects_data(j, :), max_lag, 'coeff');
+            [xcorr_values, lags] = xcorr(all_subjects_data(:, i), all_subjects_data(:, j), max_lag, 'coeff');
             
             % Find the highest correlation value within the allowed time shifts
             [best_corr, ~] = max(xcorr_values);
