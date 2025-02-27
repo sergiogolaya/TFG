@@ -137,6 +137,11 @@ for m = 1:length(muscles)
         xticklabels(subject_ids);
         yticklabels(subject_ids);
         axis square;
+
+        % Save figure
+        saveas(gcf, fullfile(save_dir, [muscle_name, '_cross_correlation.png']));
+        print(gcf, fullfile(save_dir, [muscle_name, '_cross_correlation.png']), '-dpng', '-r300');
+        close(gcf);
     end
 end
 
