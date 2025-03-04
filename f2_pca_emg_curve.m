@@ -1,6 +1,6 @@
 % Define the directories
 data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\pca_combined_emg';
-save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\pca_emg_curve';
+save_dir = 'C:\Users\sergi\Documents\CEU\TFG\results\dtw_pca';
 if ~exist(save_dir, 'dir')
     mkdir(save_dir);
 end
