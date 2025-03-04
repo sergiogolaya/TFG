@@ -10,7 +10,7 @@ if ~exist(output_dir, 'dir')
 end
 
 % Toggle to enable (true) or disable (false) plotting
-show_plots = true;
+show_plots = false;
 
 % Get list of .mat files in the input directory
 file_list = dir(fullfile(data_dir, '*.mat'));
