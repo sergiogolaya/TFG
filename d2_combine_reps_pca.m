@@ -3,6 +3,8 @@
 
 clear; clc; close all;
 
+enable_plots = false;
+
 % Define the path to the aligned data folder
 base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\dtw_aligned';
 
@@ -43,7 +45,6 @@ for f = 1:length(file_list)
     combined_emg_struct = struct();
 
     % Create a figure for visualization (optional)
-    enable_plots = true;
     if enable_plots
         figure;
         tiledlayout(length(muscles), 2);
