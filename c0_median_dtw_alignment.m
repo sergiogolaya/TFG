@@ -4,6 +4,8 @@
 % This script applies DTW to align EMG data across repetitions
 % for each subject and saves the aligned EMG data.
 %
+% Aligned median as reference
+%
 % INPUT:  Normalized EMG data (cut_data_normalized struct per subject)
 % OUTPUT: DTW-aligned EMG data saved in .mat format
 %
