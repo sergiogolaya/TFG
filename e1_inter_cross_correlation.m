@@ -1,5 +1,7 @@
 % Define the path to the combined EMG data directory
 data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\combined_emg';
+% Define the save directory for results
+save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\inter_cross_correlation';
 
 show_console_output = true;
 show_plots = true;
@@ -144,9 +146,6 @@ for m = 1:length(muscles)
         close(gcf);
     end
 end
-
-% Define the save directory for results
-save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\inter_cross_correlation';
 
 % Ensure the directory exists
 if ~exist(save_dir, 'dir')
