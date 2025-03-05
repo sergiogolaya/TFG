@@ -3,7 +3,7 @@
 
 clear; clc; close all;
 
-enable_plots = true;
+enable_plots = false;
 
 % Definir la ruta a la carpeta de datos alineados
 base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\dtw_aligned';
