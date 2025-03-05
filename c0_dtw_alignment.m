@@ -86,7 +86,7 @@ end
 
 disp('DTW alignment completed for all subjects.');
 
-%% **Fixed DTW Alignment Function**
+%% **DTW Alignment Function**
 function aligned_signal = dtwAlign(signal, ref_signal)
     % Apply Dynamic Time Warping (DTW) to align EMG signals to a reference
     
