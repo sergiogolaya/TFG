@@ -5,6 +5,7 @@ save_dir = 'C:\Users\sergi\Documents\CEU\TFG\results\inter_cross_correlation';
 
 show_console_output = true;
 show_plots = true;
+num_reps =5;
 
 % Get all .mat files in the directory
 file_list = dir(fullfile(data_dir, '*.mat'));
