@@ -18,6 +18,18 @@ end
 % Initialize a structure to store cross-correlation results
 crossCorrResults = struct();
 
+% Define mapping between descriptive muscle names and struct field names
+muscle_names = { ...
+    'Biceps Brachii', 'muscle_1'; ...
+    'Triceps Brachii', 'muscle_2'; ...
+    'Front Deltoid', 'muscle_3'; ...
+    'Trapezius', 'muscle_4'; ...
+    'Lateral Deltoid', 'muscle_5'; ...
+    'Posterior Deltoid', 'muscle_6'; ...
+    'Palmaris Longus', 'muscle_7'; ...
+    'Extensor Carpi Radialis', 'muscle_8' ...
+};
+
 % Load all subject data
 subjects_data = struct();
 subject_ids = {}; % Store extracted subject IDs
@@ -121,18 +133,27 @@ for m = 1:length(muscles)
 
     % Display results if enabled
     if show_console_output
-        fprintf('Patient: %s | Muscle: %s\n', patient_id, muscle_name);
+        % Get descriptive name if available
+        name_idx = find(strcmp(muscle_names(:,2), muscle_name));
+        if ~isempty(name_idx)
+            muscle_desc = muscle_names{name_idx,1};
+        else
+            muscle_desc = muscle_name; % fallback
+        end
+
+        fprintf('Muscle: %s\n', muscle_desc);
+
         fprintf('Mean correlation (excluding diagonal): %.4f\n', mean_corr);
         fprintf('Standard deviation: %.4f\n\n', std_corr);
     end
-    
+
     % Plot heatmap with subject IDs
     if show_plots
         figure;
         imagesc(corr_matrix_xcorr, [0.6 1]);
         colormap jet;
         colorbar;
-        title(['xcorr Cross-Correlation Between Subjects (Weighted) - ' muscle_name]);
+        title(['Cross-Correlation Between Subjects (Weighted) - ' muscle_desc]);
         xlabel('Subject');
         ylabel('Subject');
         xticks(1:num_subjects);
