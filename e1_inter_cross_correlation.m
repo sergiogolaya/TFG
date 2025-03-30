@@ -120,7 +120,7 @@ for m = 1:length(muscles)
     end
 
     % Extract non-diagonal values
-    non_diag_values = corr_matrix_xcorr(~eye(num_reps));
+    non_diag_values = corr_matrix_xcorr(~eye(num_subjects));
 
     % Compute mean and standard deviation of cross-correlation values
     mean_corr = mean(non_diag_values);
