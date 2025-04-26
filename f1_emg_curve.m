@@ -48,8 +48,8 @@ emg_results.time_vector = linspace(0, 100, num_samples);
 % Define movement phases with specific colors
 phases = {
     'Reach',     [0, 12],     [0.9, 0.8, 0.8];   % light pink
-    'Grasp',     [12, 50],    [0.8, 0.9, 0.8];   % light green
-    'Transport', [50, 80],    [0.8, 0.85, 0.95]; % light blue
+    'Grasp',     [12, 53],    [0.8, 0.9, 0.8];   % light green
+    'Transport', [53, 80],    [0.8, 0.85, 0.95]; % light blue
     'Release',   [80, 100],   [0.95, 0.95, 0.85];% light yellow
 };
 
