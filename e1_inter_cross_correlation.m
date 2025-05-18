@@ -4,7 +4,7 @@ data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\combined_emg';
 save_dir = 'C:\Users\sergi\Documents\CEU\TFG\results\inter_cross_correlation';
 
 show_console_output = true;
-show_plots = true;
+show_plots = false;
 num_reps =5;
 
 % Get all .mat files in the directory
