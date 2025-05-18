@@ -117,4 +117,41 @@ for f = 1:length(file_list)
     end
 end
 
+% Calculate mean and std for each muscle across all subjects
+all_muscle_corr = struct(); % Structure to store results for each muscle
+
+% Loop through each muscle
+for m = 1:length(muscles)
+    muscle_name = muscles{m};
+    all_subjects_corr = [];
+
+    % Loop through each patient file
+    for f = 1:length(file_list)
+        % Load the patient cross-correlation results
+        file_name = file_list(f).name;
+        file_path = fullfile(save_dir, ['crossCorrResults_' file_name]);
+        load(file_path, 'crossCorrResults');
+
+        % Append the mean correlation of this patient for the current muscle
+        if isfield(crossCorrResults, muscle_name)
+            all_subjects_corr = [all_subjects_corr; crossCorrResults.(muscle_name).mean_corr];
+        end
+    end
+
+    % Calculate the mean and std across all subjects for this muscle
+    all_muscle_corr.(muscle_name).mean_across_subjects = mean(all_subjects_corr);
+    all_muscle_corr.(muscle_name).std_across_subjects = std(all_subjects_corr);
+
+    % Display results
+    fprintf('Muscle: %s | Mean across subjects: %.4f | Std across subjects: %.4f\n', ...
+            muscle_name, all_muscle_corr.(muscle_name).mean_across_subjects, ...
+            all_muscle_corr.(muscle_name).std_across_subjects);
+end
+
+% Save the results
+save(fullfile(save_dir, 'all_muscle_cross_subjects_results.mat'), 'all_muscle_corr');
+
+fprintf('Cross-subject analysis complete. Results saved.\n');
+
+
 fprintf('Processing complete. All patient files have been analyzed.\n');
