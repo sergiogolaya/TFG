@@ -147,7 +147,7 @@ for m = 1:length(muscles)
         imagesc(corr_matrix_xcorr, [0.6 1]);
         colormap jet;
         colorbar;
-        title(['Cross-Correlation - ' muscle_name]);
+        title(['Cross-Correlation - ' muscle_desc]);
         xlabel('Subjects');
         ylabel('Subjects');
         xticks(1:num_subjects);
@@ -155,7 +155,7 @@ for m = 1:length(muscles)
         xticklabels(subject_ids_mapped);
         yticklabels(subject_ids_mapped);
         axis square;
-        saveas(gcf, fullfile(save_dir, [muscle_name, '_cross_correlation.png']));
+        saveas(gcf, fullfile(save_dir, [muscle_desc, '_cross_correlation.png']));
         close(gcf);
     end
 
