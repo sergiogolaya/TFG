@@ -1,14 +1,14 @@
 % Define the path to the combined EMG data directory
 data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\combined_emg';
 % Define the save directory for results
-save_dir = 'C:\Users\sergi\Documents\CEU\TFG\results\prueba_inter_cross_correlation';
+save_dir = 'C:\Users\sergi\Documents\CEU\TFG\results\inter_cross_correlation';
 
 show_console_output = true;
 show_plots = true;
 num_reps = 5;
 
 % Define excluded subjects
-excluded_subjects = {'p23'}; % Add subjects you want to exclude here
+excluded_subjects = {'p5', 'p12'};
 
 % Get all .mat files in the directory
 file_list = dir(fullfile(data_dir, '*.mat'));
@@ -35,134 +35,150 @@ muscle_names = { ...
 
 % Load all subject data
 subjects_data = struct();
-subject_ids_original = {}; % Store extracted subject IDs (pX)
-subject_ids_mapped = {};  % Store mapped IDs (sX)
-
-s_count = 1; % Counter for sX mapping
+subject_ids = {}; % Store extracted subject IDs
 
 for f = 1:length(file_list)
     file_name = file_list(f).name;
     full_path = fullfile(data_dir, file_name);
-
-    % Extract subject ID (pX)
+    
+    % Extract subject ID from filename (matches pattern: "pX")
     subject_match = regexp(file_name, 'processed_(p\d+)_normalized', 'tokens');
     if isempty(subject_match)
         warning('Could not extract subject ID from filename: %s', file_name);
         continue;
     end
-    subject_id = subject_match{1}{1};
-
-    % Skip excluded subjects
-    if ismember(subject_id, excluded_subjects)
-        continue;
-    end
-
-    % Map to sX format
-    subject_ids_original{end+1} = subject_id;  % Original (pX)
-    subject_ids_mapped{end+1} = ['s' num2str(s_count)]; % Mapped (sX)
-    s_count = s_count + 1;
-
+    subject_id = subject_match{1}{1}; % Extract "pX"
+    subject_ids{end+1} = subject_id; % Store for axis labels
+    
     % Load the correct structure
     loaded_data = load(full_path);
-
+    
+    % Check if 'combined_emg_struct' exists in the file
     if isfield(loaded_data, 'combined_emg_struct')
         emg_data = loaded_data.combined_emg_struct;
     else
         warning('Variable combined_emg_struct not found in file: %s', file_name);
         continue;
     end
-
+    
     % Store the subject's data
-    subjects_data.(subject_ids_mapped{end}) = emg_data;
+    subjects_data.(subject_id) = emg_data;
 end
 
-% Update number of subjects after exclusion
-num_subjects = length(subject_ids_mapped);
-
-fprintf('Subjects excluded: %s\n', strjoin(excluded_subjects, ', '));
-fprintf('Mapped subjects: %s\n', strjoin(subject_ids_mapped, ', '));
+% Convert subject IDs to a column cell array for consistent sorting
+subject_ids = subject_ids(:);
+num_subjects = length(subject_ids);
 
 % Get muscle names from the first subject (assuming consistency)
-muscles = fieldnames(subjects_data.(subject_ids_mapped{1}));
+first_subject_data = subjects_data.(subject_ids{1});
+muscles = fieldnames(first_subject_data);
 
 % Loop through each muscle
 for m = 1:length(muscles)
     muscle_name = muscles{m};
+    
+    % Extract weighted envelope data for each subject
     all_subjects_data = zeros(num_subjects, 1000); % Assuming all have 1000 time points
-
+    
     for s = 1:num_subjects
-        subj_id = subject_ids_mapped{s};
+        subj_id = subject_ids{s};
+        
+        % Check if the subject has the muscle field
         if ~isfield(subjects_data.(subj_id), muscle_name)
             warning('Muscle %s not found for subject %s. Skipping...', muscle_name, subj_id);
             continue;
         end
-
+        
         % Extract envelope and std_dev
         envelope = subjects_data.(subj_id).(muscle_name).envelope;
         std_dev = subjects_data.(subj_id).(muscle_name).std_dev;
-
+        
         % Normalize envelope using standard deviation
-        if any(std_dev ~= 0)
+        if any(std_dev ~= 0)  % Avoid division by zero
             weighted_envelope = envelope ./ std_dev;
         else
-            weighted_envelope = envelope;
+            weighted_envelope = envelope; % If std_dev is zero, keep original
         end
-
+        
+        % Store weighted envelope
         all_subjects_data(s, :) = weighted_envelope;
     end
-
-    % Compute cross-correlation with lags
+    
+    % Compute cross-correlation across subjects
     corr_matrix_xcorr = zeros(num_subjects, num_subjects);
-    max_lag = 25;
-
+    max_lag = 50; % Allow up to ±50 time shift samples
+    
     for i = 1:num_subjects
         for j = i:num_subjects
-            [xcorr_values, ~] = xcorr(all_subjects_data(i, :), all_subjects_data(j, :), max_lag, 'coeff');
-            best_corr = max(xcorr_values);
+            % Compute cross-correlation with time shifts
+            [xcorr_values, lags] = xcorr(all_subjects_data(i, :), all_subjects_data(j, :), max_lag, 'coeff');
+            
+            % Find the highest correlation value within the allowed time shifts
+            [best_corr, ~] = max(xcorr_values);
+            
+            % Store the best correlation value in the matrix
             corr_matrix_xcorr(i, j) = best_corr;
-            corr_matrix_xcorr(j, i) = best_corr; % Symmetric
+            corr_matrix_xcorr(j, i) = best_corr; % Ensure symmetry
         end
     end
 
-    % Store results
+    % Extract non-diagonal values
+    non_diag_values = corr_matrix_xcorr(~eye(num_subjects));
+
+    % Compute mean and standard deviation of cross-correlation values
+    mean_corr = mean(non_diag_values);
+    std_corr = std(non_diag_values);
+    
+    % Store results in the struct
     crossCorrResults.(muscle_name).xcorr = corr_matrix_xcorr;
+    crossCorrResults.(muscle_name).mean_corr = mean_corr;
+    crossCorrResults.(muscle_name).std_corr = std_corr;
 
     % Display results if enabled
     if show_console_output
+        % Get descriptive name if available
         name_idx = find(strcmp(muscle_names(:,2), muscle_name));
         if ~isempty(name_idx)
             muscle_desc = muscle_names{name_idx,1};
         else
-            muscle_desc = muscle_name;
+            muscle_desc = muscle_name; % fallback
         end
 
         fprintf('Muscle: %s\n', muscle_desc);
-        fprintf('Mean correlation (excluding diagonal): %.4f\n', mean(corr_matrix_xcorr(~eye(num_subjects))));
-        fprintf('Standard deviation: %.4f\n\n', std(corr_matrix_xcorr(~eye(num_subjects))));
+
+        fprintf('Mean correlation (excluding diagonal): %.4f\n', mean_corr);
+        fprintf('Standard deviation: %.4f\n\n', std_corr);
     end
 
-    % Plot heatmap if enabled
+    % Plot heatmap with subject IDs
     if show_plots
         figure;
         imagesc(corr_matrix_xcorr, [0.6 1]);
         colormap jet;
         colorbar;
-        title(['Cross-Correlation - ' muscle_name]);
-        xlabel('Subjects');
-        ylabel('Subjects');
+        title(['Cross-Correlation Between Subjects (Weighted) - ' muscle_desc]);
+        xlabel('Subject');
+        ylabel('Subject');
         xticks(1:num_subjects);
         yticks(1:num_subjects);
-        xticklabels(subject_ids_mapped);
-        yticklabels(subject_ids_mapped);
+        xticklabels(subject_ids);
+        yticklabels(subject_ids);
         axis square;
+
+        % Save figure
         saveas(gcf, fullfile(save_dir, [muscle_name, '_cross_correlation.png']));
+        print(gcf, fullfile(save_dir, [muscle_name, '_cross_correlation.png']), '-dpng', '-r300');
         close(gcf);
     end
+end
 
+% Ensure the directory exists
+if ~exist(save_dir, 'dir')
+    mkdir(save_dir);
 end
 
 % Save results
 save_filename = fullfile(save_dir, 'crossCorrResults_subjects_weighted.mat');
 save(save_filename, 'crossCorrResults');
 
-fprintf('Cross-correlation results (with lags) saved to: %s\n', save_filename);
+fprintf('Cross-correlation results (weighted by std_dev) saved to: %s\n', save_filename);
