@@ -13,7 +13,7 @@ end
 
 % Define toggles
 show_plots = false;  % Set to 'false' to disable plots
-show_console_output = false; % Set to 'false' to disable console messages
+show_console_output = true; % Set to 'false' to disable console messages
 
 % Define the save directory
 save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\intra_cross_correlation';
@@ -49,7 +49,7 @@ for f = 1:length(file_list)
 
         % Initialize cross-correlation matrix
         corr_matrix_xcorr = zeros(num_reps, num_reps);
-        max_lag = 50; % Allow up to ±50 time shift samples
+        max_lag = 25; % Allow up to ±50 time shift samples
 
         % Extract envelope data for all repetitions
         all_reps_data = zeros(num_reps, 1000); % Assuming all have 1000 time points
@@ -65,8 +65,8 @@ for f = 1:length(file_list)
                 [xcorr_values, lags] = xcorr(all_reps_data(i, :), all_reps_data(j, :), max_lag, 'coeff');
                 
                 % Find the highest correlation value within the allowed time shifts
-                [best_corr, ~] = max(xcorr_values);
-                
+                % [best_corr, ~] = max(xcorr_values);
+                best_corr = mean(xcorr_values);
                 % Store the best correlation value in the matrix
                 corr_matrix_xcorr(i, j) = best_corr;
                 corr_matrix_xcorr(j, i) = best_corr; % Ensure symmetry

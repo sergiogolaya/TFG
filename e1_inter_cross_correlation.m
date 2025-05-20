@@ -118,7 +118,8 @@ for m = 1:length(muscles)
     for i = 1:num_subjects
         for j = i:num_subjects
             [xcorr_values, ~] = xcorr(all_subjects_data(i, :), all_subjects_data(j, :), max_lag, 'coeff');
-            best_corr = max(xcorr_values);
+            % best_corr = max(xcorr_values);
+            best_corr = mean(xcorr_values);
             corr_matrix_xcorr(i, j) = best_corr;
             corr_matrix_xcorr(j, i) = best_corr; % Symmetric
         end
