@@ -49,7 +49,7 @@ for f = 1:length(file_list)
 
         % Initialize cross-correlation matrix
         corr_matrix_xcorr = zeros(num_reps, num_reps);
-        max_lag = 25; % Allow up to ±50 time shift samples
+        max_lag = 25; % Allow up to ±25 time shift samples
 
         % Extract envelope data for all repetitions
         all_reps_data = zeros(num_reps, 1000); % Assuming all have 1000 time points
