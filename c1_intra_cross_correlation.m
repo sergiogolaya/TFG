@@ -11,8 +11,12 @@ if isempty(file_list)
     error('No .mat files found in the directory.');
 end
 
+% Initialize figure counter
+figure_counter = 0;
+max_figures = 50; % Set the maximum number of figures to display
+
 % Define toggles
-show_plots = false;  % Set to 'false' to disable plots
+show_plots = true;  % Set to 'false' to disable plots
 show_console_output = false; % Set to 'false' to disable console messages
 
 % Define the save directory
@@ -65,8 +69,7 @@ for f = 1:length(file_list)
                 [xcorr_values, lags] = xcorr(all_reps_data(i, :), all_reps_data(j, :), max_lag, 'coeff');
                 
                 % Find the highest correlation value within the allowed time shifts
-                % [best_corr, ~] = max(xcorr_values);
-                best_corr = mean(xcorr_values);
+                [best_corr, ~] = max(xcorr_values);
                 % Store the best correlation value in the matrix
                 corr_matrix_xcorr(i, j) = best_corr;
                 corr_matrix_xcorr(j, i) = best_corr; % Ensure symmetry
@@ -93,12 +96,14 @@ for f = 1:length(file_list)
         end
 
         % Plot heatmap if enabled
-        if show_plots
+        if show_plots && figure_counter < max_figures
+            figure_counter = figure_counter + 1;
             figure;
             imagesc(corr_matrix_xcorr, [0.8 1]);
             colormap jet;
             colorbar;
-            title(['xcorr Cross-Correlation - ' muscle_name ' | ' patient_id]);
+            % title(['xcorr Cross-Correlation - ' muscle_name ' | ' patient_id]);
+            title('xcorr Cross-Correlation');
             xlabel('Repetition');
             ylabel('Repetition');
             axis square;

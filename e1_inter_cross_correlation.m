@@ -4,7 +4,7 @@ data_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\combined_emg';
 save_dir = 'C:\Users\sergi\Documents\CEU\TFG\results\prueba_inter_cross_correlation';
 
 show_console_output = true;
-show_plots = false;
+show_plots = true;
 num_reps = 5;
 
 % Define excluded subjects
@@ -118,8 +118,7 @@ for m = 1:length(muscles)
     for i = 1:num_subjects
         for j = i:num_subjects
             [xcorr_values, ~] = xcorr(all_subjects_data(i, :), all_subjects_data(j, :), max_lag, 'coeff');
-            % best_corr = max(xcorr_values);
-            best_corr = mean(xcorr_values);
+            best_corr = max(xcorr_values);
             corr_matrix_xcorr(i, j) = best_corr;
             corr_matrix_xcorr(j, i) = best_corr; % Symmetric
         end
@@ -138,8 +137,8 @@ for m = 1:length(muscles)
         end
 
         fprintf('Muscle: %s\n', muscle_desc);
-        fprintf('Mean correlation (excluding diagonal): %.4f\n', mean(corr_matrix_xcorr(~eye(num_subjects))));
-        fprintf('Standard deviation: %.4f\n\n', std(corr_matrix_xcorr(~eye(num_subjects))));
+        fprintf('Mean correlation (excluding diagonal): %.4f ± %.4f\n', mean(corr_matrix_xcorr(~eye(num_subjects))), std(corr_matrix_xcorr(~eye(num_subjects))));
+        % fprintf('Standard deviation: %.4f\n\n', std(corr_matrix_xcorr(~eye(num_subjects))));
     end
 
     % Plot heatmap if enabled
