@@ -5,7 +5,7 @@
 base_path = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\normalized';
 
 % Set this to true to enable plotting, false to disable it
-enable_plots = false; 
+enable_plots = true; 
 
 % Get a list of all .mat files in the directory
 mat_files = dir(fullfile(base_path, '*.mat'));
@@ -47,7 +47,8 @@ for file_idx = 1:length(mat_files)
     if enable_plots
         figure;
         tiledlayout(length(muscles), 1);
-        sgtitle(['EMG Signals Combined (Mean ± Std Dev) - ' patient_id]);
+        % sgtitle(['EMG Signals Combined (Mean ± Std Dev) - ' patient_id]);
+        sgtitle('EMG Signals Combined (Mean ± Std Dev)');
     end
 
     % Loop through each muscle
@@ -79,7 +80,7 @@ for file_idx = 1:length(mat_files)
             time_vector = 1:sample_length;
             fill([time_vector, fliplr(time_vector)], ...
                  [combined_signal - std_dev; flipud(combined_signal + std_dev)], ...
-                 [0.8, 0.8, 0.8], 'EdgeColor', 'none', 'FaceAlpha', 0.5); % Shaded region
+                 [1, 0, 0], 'EdgeColor', 'none', 'FaceAlpha', 0.5); % Shaded region
             
             hold on;
             plot(time_vector, combined_signal, 'b', 'LineWidth', 1.5);

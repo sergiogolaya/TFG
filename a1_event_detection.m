@@ -106,6 +106,9 @@ figure;
 hold on;
 plot(time_vector, envelope_emg(:, 3), 'b', 'DisplayName', 'EMG Envelope');
 ylim([0 max(envelope_emg(:, 3))]); % Dynamically scale y-axis based on actual envelope data
+title('Detected Events (After Clustering)' , 'FontSize', 18);
+xlabel('Time (s)')
+ylabel('EMG Amplitude (V)')
 
 for k = 1:size(rep_events, 1)
     x_patch = [time_vector(rep_events(k, 1)); time_vector(rep_events(k, 2)); 
@@ -183,9 +186,9 @@ for rep = 1:num_reps
     patch(x_patch, y_patch, 'g', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
 end
 
-title('Final Adjusted Repetitions (Manual Selection + Clustering)');
+title('Final Adjusted Repetitions (After Manual Selection)', 'FontSize', 18);
 xlabel('Time (s)');
-ylabel('Amplitude');
+ylabel('Amplitude (V)');
 legend('EMG Envelope', 'Final Movement Regions');
 hold off;
 
