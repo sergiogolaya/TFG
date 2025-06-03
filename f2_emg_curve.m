@@ -78,7 +78,6 @@ for m = 1:num_muscles
     subplot(4, 2, m);
     hold on;
 
-    % Relleno ± std
     fill([emg_results.time_vector, fliplr(emg_results.time_vector)], ...
          [muscle_mean + muscle_std; flipud(muscle_mean - muscle_std)], ...
          'b', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
@@ -90,7 +89,6 @@ for m = 1:num_muscles
     ylim(ax, [0 0.8]);
     yl = ylim(ax);
 
-    % Fases con sombreado
     for p = 1:size(phases, 1)
         range = phases{p, 2};
         color = phases{p, 3};
@@ -106,7 +104,6 @@ for m = 1:num_muscles
     title(muscle_name, 'FontSize', 11);
     grid on;
 
-    % Etiquetas solo en bordes
     % if m > 6
     %     xlabel('% Reach and Grasp Cycle');
     % end
@@ -115,7 +112,6 @@ for m = 1:num_muscles
         ylabel('Normalized EMG');
     end
 
-    % Para figura combinada opcional
     combined_means = [combined_means; muscle_mean'];
 end
 
@@ -144,8 +140,8 @@ end
 
 % Shading movement phases
 ax = gca;
-ylim(ax, [0 0.8]);  % o ajusta si necesitas más alto
-yl = ylim(ax);      % se actualiza al nuevo rango manual
+ylim(ax, [0 0.8]); 
+yl = ylim(ax);     
 for p = 1:size(phases, 1)
     range = phases{p, 2};
     color = phases{p, 3};

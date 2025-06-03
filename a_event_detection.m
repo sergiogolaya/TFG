@@ -113,7 +113,7 @@ ylabel('EMG Amplitude (V)')
 for k = 1:size(rep_events, 1)
     x_patch = [time_vector(rep_events(k, 1)); time_vector(rep_events(k, 2)); 
                time_vector(rep_events(k, 2)); time_vector(rep_events(k, 1))];
-    y_patch = [0; 0; 1; 1] * max(envelope_emg(:, 3)); % Ensure we use the correct muscle index
+    y_patch = [0; 0; 1; 1] * max(envelope_emg(:, 3));
     patch(x_patch, y_patch, 'r', 'FaceAlpha', 0.3, 'EdgeColor', 'none');
 end
 
@@ -128,7 +128,7 @@ for i = 1:2:length(x)-1
     [~, idx_end] = min(abs(time_vector - x(i+1)));
 
     
-    % Buscar todos los eventos detectados dentro del rango seleccionado
+    % Search for all detected events within the selected range
     valid_starts = rep_events(:,1);
     valid_ends = rep_events(:,2);
     
@@ -137,10 +137,10 @@ for i = 1:2:length(x)-1
     valid_ends_in_range = valid_ends(indices_in_range);
     
     if isempty(valid_starts_in_range) || isempty(valid_ends_in_range)
-        continue; % Si no hay eventos en el rango, ignorar
+        continue; % If there are no events within the range, continue
     end
 
-    % Tomar el primer y último índice dentro del rango
+    % Tke the first and last index within the range
     refined_start = min(valid_starts_in_range);
     refined_end = max(valid_ends_in_range);
 

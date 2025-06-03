@@ -167,22 +167,19 @@ save(save_filename, 'crossCorrResults');
 
 fprintf('Cross-correlation results (with lags) saved to: %s\n', save_filename);
 
-% --------- Figura conjunta de heatmaps ---------
 figure('Units', 'pixels', 'Position', [100, 100, 900, 1600]);
 set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0 0 8.27 11.69]);  % A4 vertical
 
-muscle_labels = {};  % Para sgtitle si quieres listarlos
+muscle_labels = {};
 
 for m = 1:length(muscles)
     muscle_name = muscles{m};
 
-    % Verifica si se calculó ese heatmap
     if ~isfield(crossCorrResults, muscle_name)
         warning('No se encontró correlación para %s. Saltando...', muscle_name);
         continue;
     end
 
-    % Obtener descripción
     idx = find(strcmp(muscle_names(:,2), muscle_name));
     if ~isempty(idx)
         muscle_desc = muscle_names{idx,1};
@@ -191,10 +188,8 @@ for m = 1:length(muscles)
     end
     muscle_labels{end+1} = muscle_desc;
 
-    % Obtener matriz de correlación
     corr_matrix = crossCorrResults.(muscle_name).xcorr;
 
-    % Plot en subplot correspondiente
     subplot(4, 2, m);
     imagesc(corr_matrix, [0.6 1]);
     colormap jet;
@@ -211,7 +206,6 @@ for m = 1:length(muscles)
     set(gca, 'FontSize', 8);
 end
 
-% Guardar como imagen
 saveas(gcf, fullfile(save_dir, 'all_heatmaps_subplot.png'));
 close(gcf);
 

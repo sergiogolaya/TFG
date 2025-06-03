@@ -67,7 +67,6 @@ for f = 1:length(file_list)
             % Perform smooth interpolation
             interpolated_envelope = interp1(original_time, envelope_data, normalized_time, 'pchip');
 
-            % **New Normalization Step: Normalize each repetition individually**
             min_val = min(interpolated_envelope);
             max_val = max(interpolated_envelope);
             
