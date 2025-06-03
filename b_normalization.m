@@ -99,15 +99,15 @@ for f = 1:length(file_list)
         subplot(2,1,1);
         plot(data.emg_data_struct.cut_data.(first_rep).(first_muscle).envelope, 'b');
         % title(sprintf('Original Envelope - %s (%s)', first_muscle, file_name), 'Interpreter', 'none');
-        title('Original Envelope');
+        title('Original Envelope', 'FontSize', 18);
         xlabel('Number of Samples');
-        ylabel('Envelope Amplitude');
+        ylabel('Envelope Amplitude (V)');
         grid on;
         
         % Plot the normalized envelope (0-100% x-axis)
         subplot(2,1,2);
         plot(linspace(0, 100, num_points), data.emg_data_struct.cut_data_normalized.(first_rep).(first_muscle).envelope, 'r');
-        title('Normalized Envelope');
+        title('Normalized Envelope', 'FontSize', 18);
         xlabel('Repetition Completion (%)');
         ylabel('Envelope Amplitude');
         grid on;
