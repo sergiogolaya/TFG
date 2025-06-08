@@ -46,9 +46,9 @@ for file_idx = 1:length(mat_files)
     % Create a figure for visualization if enabled
     if enable_plots
         figure;
-        tiledlayout(length(muscles), 1);
+        % tiledlayout(length(muscles), 1);
+        tiledlayout(4, 2);
         % sgtitle(['EMG Signals Combined (Mean ± Std Dev) - ' patient_id]);
-        sgtitle('EMG Signals Combined (Mean ± Std Dev)');
     end
 
     % Loop through each muscle
@@ -80,18 +80,17 @@ for file_idx = 1:length(mat_files)
             time_vector = 1:sample_length;
             fill([time_vector, fliplr(time_vector)], ...
                  [combined_signal - std_dev; flipud(combined_signal + std_dev)], ...
-                 [1, 0, 0], 'EdgeColor', 'none', 'FaceAlpha', 0.5); % Shaded region
+                 [0.8, 0.8, 0.8], 'EdgeColor', 'none', 'FaceAlpha', 0.5); % Shaded region
             
             hold on;
             plot(time_vector, combined_signal, 'b', 'LineWidth', 1.5);
             hold off;
             
-            title(muscle_name, 'Interpreter', 'none');
+            title(muscle_name, 'Interpreter', 'none', 'FontSize', 16);
             xlabel('Samples');
             ylabel('Amplitude');
             grid on;
-            legend('Std Dev', 'Mean', 'Location', 'Best');
-
+            legend('Std Dev', 'Mean', 'Location', 'northwest');
             % Ensure MATLAB updates the figure
             drawnow;
         end
