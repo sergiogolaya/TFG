@@ -11,13 +11,15 @@ if isempty(file_list)
     error('No .mat files found in the directory.');
 end
 
+counter = 0;
+
 % Initialize figure counter
 figure_counter = 0;
 max_figures = 50; % Set the maximum number of figures to display
 
 % Define toggles
-show_plots = true;  % Set to 'false' to disable plots
-show_console_output = false; % Set to 'false' to disable console messages
+show_plots = false;  % Set to 'false' to disable plots
+show_console_output = true; % Set to 'false' to disable console messages
 
 % Define the save directory
 save_dir = 'C:\Users\sergi\Documents\CEU\TFG\medidas\patients\intra_cross_correlation';
@@ -73,6 +75,12 @@ for f = 1:length(file_list)
                 % Store the best correlation value in the matrix
                 corr_matrix_xcorr(i, j) = best_corr;
                 corr_matrix_xcorr(j, i) = best_corr; % Ensure symmetry
+                if counter < 10
+                    figure();
+                    stem(lags, xcorr_values);
+                    ylim([0.6 1])
+                    counter = counter + 1;
+                end
             end
         end
 

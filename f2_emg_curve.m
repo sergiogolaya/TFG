@@ -54,8 +54,8 @@ phases = {
 };
 
 % Store all muscle means for the combined plot
-figure('Units', 'inches', 'Position', [0, 0, 8.27, 11.69]);  % A4 en vertical
-set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0, 0, 8.27, 11.69]);
+figure('Units', 'inches', 'Position', [0, 0,11.69, 8.27]);  % A4 en vertical
+set(gcf, 'PaperUnits', 'inches', 'PaperPosition', [0, 0, 11.69, 8.27]);
 
 % Inicializar contenedor para curva combinada (si la necesitas más adelante)
 combined_means = [];
@@ -75,7 +75,7 @@ for m = 1:num_muscles
     end
 
     % -------- SUBPLOT --------
-    subplot(4, 2, m);
+    subplot(2, 4, m);
     hold on;
 
     fill([emg_results.time_vector, fliplr(emg_results.time_vector)], ...
