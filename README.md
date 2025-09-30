@@ -1,12 +1,14 @@
 # EMG Signal Processing and Analysis
 
 ## Overview
-This project focuses on processing, normalizing, and analyzing electromyography (EMG) signals recorded from multiple muscles during movement. The provided MATLAB scripts perform key tasks such as filtering, event detection, normalization, dynamic time warping (DTW) alignment, cross-correlation analysis, and combining repetitions for refined interpretation of EMG data.
+This project focuses on processing, normalizing, and analyzing electromyography (EMG) signals recorded from multiple muscles during movement.  
+The provided MATLAB scripts perform key tasks such as filtering, event detection, normalization, cross-correlation analysis, and combining repetitions for refined interpretation of EMG data.
+
+---
 
 ## Project Structure
-The repository contains the following MATLAB scripts:
 
-### 1. `a1_event_detection.m`
+### 1. `a_event_detection.m`
 **Purpose:**
 - Loads raw EMG data from an Excel file.
 - Applies preprocessing, including bandpass filtering and adaptive notch filtering to remove noise and power line interference.
@@ -18,107 +20,109 @@ The repository contains the following MATLAB scripts:
 
 **Key Features:**
 - Uses a Butterworth bandpass filter (20–450 Hz) to remove unwanted frequencies.
-- Detects movement repetitions based on envelope amplitude thresholds.
-- Provides user interaction for refining segmentation.
+- Implements adaptive percentile-based thresholding for event detection.
+- Provides user interaction for refining segmentation via graphical selection.
+
+---
 
 ### 2. `b_normalization.m`
 **Purpose:**
 - Loads previously processed EMG data.
 - Normalizes each movement repetition to a standard time scale (0–100%).
-- Uses interpolation to align EMG envelopes across repetitions for comparison.
+- Uses piecewise cubic Hermite interpolation (pchip) to align EMG envelopes across repetitions.
 - Saves the normalized data into new `.mat` files.
 
 **Key Features:**
 - Ensures consistent time scaling for all repetitions.
-- Uses linear interpolation to align different movement durations.
 - Provides visual comparison between original and normalized envelopes.
+- Processes all files in a directory automatically.
 
-### 3. `c0_dtw_alignment.m` & `c0_median_dtw_alignment.m`
+---
+
+### 3. `c_intra_cross_correlation.m`
 **Purpose:**
-- Aligns EMG repetitions using Dynamic Time Warping (DTW).
-- `c0_dtw_alignment.m` selects the best repetition (based on DTW distance) as the reference.
-- `c0_median_dtw_alignment.m` uses the median repetition as the reference.
-- Saves DTW-aligned EMG data into `.mat` files.
-
-**Key Features:**
-- Improves consistency of EMG data across repetitions.
-- Supports different reference selection strategies.
-- Ensures aligned signals for further analysis.
-
-### 4. `c1_intra_cross_correlation.m` & `c12_dtw_intra_cross_correlation.m`
-**Purpose:**
-- Computes cross-correlation matrices between repetitions for each muscle.
-- `c1_intra_cross_correlation.m` works on normalized EMG data.
-- `c12_dtw_intra_cross_correlation.m` works on DTW-aligned data.
-- Saves computed correlation matrices for further analysis.
+- Computes cross-correlation matrices between repetitions for each muscle within individual subjects.
+- Allows time shifts (±25 samples) to find optimal alignment.
+- Calculates mean and standard deviation of correlation values.
+- Saves correlation results for each patient.
 
 **Key Features:**
 - Measures similarity between repetitions for consistency analysis.
 - Visualizes results using heatmaps.
-- Saves structured correlation results for each patient.
+- Performs cross-subject analysis to compute average correlations per muscle.
 
-### 5. `d1_combine_reps_mean.m` & `d2_combine_reps_pca.m`
+---
+
+### 4. `d_combine_reps_mean.m`
 **Purpose:**
-- Combines multiple EMG repetitions into a single representation.
-- `d1_combine_reps_mean.m` uses mean and standard deviation.
-- `d2_combine_reps_pca.m` applies Principal Component Analysis (PCA) to extract the dominant component.
+- Combines multiple EMG repetitions into a single representation using mean and standard deviation.
+- Creates a summarized EMG profile for each muscle across repetitions.
+- Saves combined data with standard deviation information.
 
 **Key Features:**
 - Provides a robust way to summarize multiple repetitions.
-- PCA-based combination captures the most representative EMG pattern.
+- Visualizes combined signals with standard deviation shading.
+- Processes all files in a directory automatically.
 
-### 6. `e1_inter_cross_correlation.m` & `e2_pca_inter_cross_correlation.m`
+---
+
+### 5. `e_inter_cross_correlation.m`
 **Purpose:**
 - Computes cross-correlation across subjects to evaluate inter-subject similarity.
-- `e1_inter_cross_correlation.m` works on combined EMG data.
-- `e2_pca_inter_cross_correlation.m` works on PCA-combined EMG data.
-- Saves structured correlation results for further analysis.
+- Uses standard deviation-weighted envelopes for improved comparison.
+- Generates heatmap visualizations of subject-to-subject correlations.
+- Saves structured correlation results.
 
 **Key Features:**
 - Measures similarity across different individuals.
-- Supports visualization of subject-to-subject correlation.
+- Supports exclusion of specific subjects from analysis.
+- Creates comprehensive subplot visualizations for all muscles.
 
-### 7. `f1_emg_curve.m` & `f2_pca_emg_curve.m`
+---
+
+### 6. `f1_emg_curve.m` & `f2_emg_curve.m`
 **Purpose:**
-- Computes representative EMG curves across subjects.
-- `f1_emg_curve.m` generates mean EMG curves with standard deviation shading.
-- `f2_pca_emg_curve.m` generates PCA-based EMG profiles.
-- Saves visualizations and structured results.
+- Computes representative EMG curves across all subjects.  
+- `f1_emg_curve.m`: Generates individual and combined EMG plots with movement phase shading.  
+- `f2_emg_curve.m`: Creates subplot arrangements suitable for publication.  
 
 **Key Features:**
-- Provides a smooth EMG curve representation.
-- Uses mean or PCA to create generalized EMG curves.
+- Defines four movement phases (Reach, Grasp, Transport, Release) with distinct color coding.
+- Provides both individual muscle plots and combined visualizations.
+- Generates high-resolution images for publication.
 
-### 8. `plot_muscle.m`
+---
+
+### 7. `plot_muscle.m`
 **Purpose:**
 - Allows visualization of individual EMG repetitions per muscle.
-- Supports selection between normalized or DTW-aligned data.
+- Supports interactive selection of muscles and data files.
 - Provides options to plot all muscles or select one interactively.
 
 **Key Features:**
 - Facilitates visual inspection of EMG envelopes.
 - Uses interactive selection for user convenience.
+- Supports both normalized and DTW-aligned data.
+
+---
 
 ## How to Use
-1. **Preprocess Raw Data:** Run `a1_event_detection.m` to filter and segment EMG data.
-2. **Normalize Data:** Use `b_normalization.m` to standardize the time scale of repetitions.
-3. **Align Data:** Execute `c0_dtw_alignment.m` or `c0_median_dtw_alignment.m` to perform DTW alignment.
-4. **Analyze Intra-Subject Consistency:** Run `c1_intra_cross_correlation.m` or `c12_dtw_intra_cross_correlation.m`.
-5. **Combine Repetitions:** Use `d1_combine_reps_mean.m` or `d2_combine_reps_pca.m`.
-6. **Analyze Inter-Subject Similarity:** Run `e1_inter_cross_correlation.m` or `e2_pca_inter_cross_correlation.m`.
-7. **Generate Representative EMG Curves:** Use `f1_emg_curve.m` or `f2_pca_emg_curve.m`.
-8. **Visualize Individual Muscle Repetitions:** Run `plot_muscle.m`.
+1. **Preprocess Raw Data:** Run `a_event_detection.m` to filter and segment EMG data.  
+2. **Normalize Data:** Use `b_normalization.m` to standardize the time scale of repetitions.  
+3. **Analyze Intra-Subject Consistency:** Run `c_intra_cross_correlation.m` to measure repetition similarity within subjects.  
+4. **Combine Repetitions:** Use `d_combine_reps_mean.m` to create summarized EMG profiles.  
+5. **Analyze Inter-Subject Similarity:** Run `e_inter_cross_correlation.m` to measure similarity across subjects.  
+6. **Generate Representative EMG Curves:** Use `f1_emg_curve.m` or `f2_emg_curve.m` for publication-ready visualizations.  
+7. **Visualize Individual Muscle Repetitions:** Run `plot_muscle.m` for detailed inspection.  
+
+---
 
 ## Dependencies
-- MATLAB with Signal Processing Toolbox.
-- EMG data stored in `.xlsx` format for preprocessing.
-- `.mat` file compatibility for storing processed data.
+- MATLAB with Signal Processing Toolbox  
+- EMG data stored in `.xlsx` format for preprocessing  
+- `.mat` file compatibility for storing processed data  
 
-## Future Improvements
-- Implement automatic parameter tuning for event detection.
-- Add support for real-time EMG analysis.
-- Improve UI interaction for manual selection.
+---
 
 ## Author
-Sergio García Olaya
-
+**Sergio García Olaya**
